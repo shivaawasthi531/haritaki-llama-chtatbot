@@ -1,0 +1,3597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. HealthAI - AI Medical Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --gray-color: #95a5a6;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 10px;
+            --transition: all 0.3s ease;
+            
+            /* Department Colors */
+            --cardiology-color: #e74c3c;
+            --pediatrics-color: #3498db;
+            --neurology-color: #9b59b6;
+            --gastro-color: #1abc9c;
+            --derm-color: #e67e22;
+            --ortho-color: #34495e;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .logo-text h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .logo-text p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .header-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .status-dot.active {
+            background: var(--secondary-color);
+            box-shadow: 0 0 10px var(--secondary-color);
+            animation: blink 2s infinite;
+        }
+
+        .emergency-contact {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(231, 76, 60, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        /* Department Selection */
+        .department-selector {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .department-selector h3 {
+            margin-bottom: 15px;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .department-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .department-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .dept-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .dept-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .dept-btn.cardiology { background: var(--cardiology-color); }
+        .dept-btn.pediatrics { background: var(--pediatrics-color); }
+        .dept-btn.neurology { background: var(--neurology-color); }
+        .dept-btn.gastroenterology { background: var(--gastro-color); }
+        .dept-btn.dermatology { background: var(--derm-color); }
+        .dept-btn.orthopedics { background: var(--ortho-color); }
+
+        .dept-btn.active {
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.5);
+            transform: scale(1.05);
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 20px;
+            min-height: 70vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .patient-profile, .quick-actions, .health-tips, .department-selector {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+        }
+
+        .profile-header i {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: var(--light-color);
+            color: var(--dark-color);
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f5f5;
+        }
+
+        .disclaimer {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: #856404;
+        }
+
+        .disclaimer i {
+            color: var(--warning-color);
+        }
+
+        .profile-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .profile-card .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .avatar {
+            font-size: 2.5rem;
+        }
+
+        .profile-info h4 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .profile-info p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .profile-details {
+            margin: 15px 0;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .quick-actions h4,
+        .health-tips h4 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dark-color);
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--light-color);
+            border: none;
+            border-radius: 8px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--dark-color);
+        }
+
+        .action-btn:hover {
+            background: #e0e0e0;
+            transform: translateX(5px);
+        }
+
+        .tip {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .tip i {
+            color: var(--secondary-color);
+            margin-top: 3px;
+        }
+
+        .tip p {
+            font-size: 0.9rem;
+            color: var(--dark-color);
+        }
+
+        /* Chat Container Styles */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--dark-color) 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .doctor-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .doctor-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .doctor-specialty {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .chat-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(15deg);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 500px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .doctor-message .message-avatar {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .user-message .message-avatar {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .sender {
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .time {
+            font-size: 0.8rem;
+            color: var(--gray-color);
+        }
+
+        .message-text {
+            background: white;
+            padding: 15px;
+            border-radius: 0 15px 15px 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-message .message-text {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #27ae60 100%);
+            color: white;
+            border-radius: 15px 0 15px 15px;
+        }
+
+        .typing-indicator {
+            padding: 10px 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            color: var(--gray-color);
+            font-style: italic;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gray-color);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .chat-input-container {
+            border-top: 1px solid #e0e0e0;
+            padding: 20px;
+            background: white;
+        }
+
+        .input-tools {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tool-btn {
+            padding: 8px 15px;
+            background: var(--light-color);
+            border: none;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tool-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper textarea {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 1rem;
+            resize: none;
+            min-height: 60px;
+            max-height: 120px;
+            transition: var(--transition);
+        }
+
+        .input-wrapper textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+
+        .input-suggestions {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .suggestion-label {
+            font-size: 0.9rem;
+            color: var(--gray-color);
+        }
+
+        .suggestion-btn {
+            padding: 5px 10px;
+            background: var(--light-color);
+            border: 1px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .suggestion-btn:hover {
+            background: #e0e0e0;
+            transform: translateY(-1px);
+        }
+
+        /* Info Panel Styles */
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-section {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-content {
+            padding: 20px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .placeholder {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-color);
+            text-align: center;
+            gap: 10px;
+        }
+
+        .placeholder i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .diagnosis-card, .treatment-card, .test-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .treatment-card {
+            border-left-color: var(--secondary-color);
+        }
+
+        .test-card {
+            border-left-color: var(--warning-color);
+        }
+
+        .diagnosis-card h5, .treatment-card h5, .test-card h5 {
+            margin-bottom: 5px;
+            color: var(--dark-color);
+        }
+
+        .diagnosis-card p, .treatment-card p, .test-card p {
+            font-size: 0.9rem;
+            color: var(--gray-color);
+        }
+
+        /* Department-specific styling */
+        .department-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .cardiology-tag {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--cardiology-color);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .pediatrics-tag {
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--pediatrics-color);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .neurology-tag {
+            background: rgba(155, 89, 182, 0.1);
+            color: var(--neurology-color);
+            border: 1px solid rgba(155, 89, 182, 0.3);
+        }
+
+        .gastro-tag {
+            background: rgba(26, 188, 156, 0.1);
+            color: var(--gastro-color);
+            border: 1px solid rgba(26, 188, 156, 0.3);
+        }
+
+        .derm-tag {
+            background: rgba(230, 126, 34, 0.1);
+            color: var(--derm-color);
+            border: 1px solid rgba(230, 126, 34, 0.3);
+        }
+
+        .ortho-tag {
+            background: rgba(52, 73, 94, 0.1);
+            color: var(--ortho-color);
+            border: 1px solid rgba(52, 73, 94, 0.3);
+        }
+
+        /* Footer Styles */
+        .footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .footer-section h4 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: var(--light-color);
+        }
+
+        .footer-section p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: slideInUp 0.3s ease;
+        }
+
+        .modal-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .modal-header.emergency {
+            background: linear-gradient(135deg, var(--danger-color) 0%, #c0392b 100%);
+        }
+
+        .modal-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        /* Emergency Modal Specific */
+        .emergency-info {
+            text-align: center;
+        }
+
+        .emergency-info i {
+            font-size: 3rem;
+            color: var(--danger-color);
+            margin-bottom: 20px;
+        }
+
+        .emergency-info h4 {
+            color: var(--danger-color);
+            margin-bottom: 15px;
+        }
+
+        .emergency-steps {
+            margin: 20px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .emergency-contacts {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .emergency-contacts h5 {
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+
+        .emergency-contacts ul {
+            list-style: none;
+        }
+
+        .emergency-contacts li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .btn-emergency {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--danger-color) 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+
+        .btn-emergency:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        /* Symptom Modal */
+        .symptom-selector {
+            margin-bottom: 20px;
+        }
+
+        #symptom-search {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .symptom-categories {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            padding: 8px 15px;
+            background: var(--light-color);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .category-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .symptoms-list {
+            max-height: 200px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .symptom-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .symptom-item:hover {
+            background: #e0e0e0;
+        }
+
+        .symptom-item.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-dark);
+        }
+
+        .selected-symptoms {
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+
+        #selected-symptoms-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .selected-symptom {
+            background: var(--secondary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .selected-symptom i {
+            cursor: pointer;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-left: 4px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1001;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification i {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification h4 {
+            margin-bottom: 5px;
+            color: var(--dark-color);
+        }
+
+        .notification p {
+            font-size: 0.9rem;
+            color: var(--gray-color);
+        }
+
+        .close-notification {
+            background: none;
+            border: none;
+            color: var(--gray-color);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 280px 1fr 300px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+            }
+            
+            .sidebar, .info-panel {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            
+            .patient-profile {
+                grid-column: 1 / -1;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .header-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .sidebar, .info-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .input-suggestions {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .symptoms-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header, .sidebar, .chat-container, .info-panel, .footer {
+                padding: 15px;
+            }
+            
+            .logo-text h1 {
+                font-size: 1.4rem;
+            }
+            
+            .doctor-info h2 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Groq Powered Badge */
+        .groq-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .message-text ul {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+
+        .message-text ol {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+
+        .message-text li {
+            margin-bottom: 4px;
+        }
+
+        .message-text strong {
+            font-weight: 600;
+        }
+
+        .message-text p + p {
+            margin-top: 8px;
+        }
+
+        .groq-thinking {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: #667eea;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-bell" id="notification-icon"></i>
+        <div class="notification-content">
+            <h4 id="notification-title">Notification</h4>
+            <p id="notification-message">Message content</p>
+        </div>
+        <button class="close-notification" id="close-notification">&times;</button>
+    </div>
+
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Dr. HealthAI <span class="groq-badge"><i class="fas fa-bolt"></i> Groq Powered</span></h1>
+                    <p>AI-Powered Medical Assistant — Ultrafast Inference by Groq</p>
+                </div>
+            </div>
+            <div class="header-info">
+                <div class="status-indicator">
+                    <span class="status-dot active"></span>
+                    <span>Online & Ready to Help</span>
+                </div>
+                <div class="emergency-contact">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>Emergency: Call 112</span>
+                </div>
+            </div>
+        </header>
+
+
+
+        <div class="main-content">
+            <!-- Sidebar - Patient Info -->
+            <aside class="sidebar">
+                <div class="patient-profile">
+                    <div class="profile-header">
+                        <i class="fas fa-user-md"></i>
+                        <h3>Patient Information</h3>
+                    </div>
+                    
+                    <div class="profile-form" id="patient-form">
+                        <div class="form-group">
+                            <label for="patient-name">
+                                <i class="fas fa-user"></i> Full Name
+                            </label>
+                            <input type="text" id="patient-name" placeholder="Enter your full name" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="patient-age">
+                                    <i class="fas fa-birthday-cake"></i> Age
+                                </label>
+                                <input type="number" id="patient-age" placeholder="Age" min="1" max="120" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patient-gender">
+                                    <i class="fas fa-venus-mars"></i> Gender
+                                </label>
+                                <select id="patient-gender" required>
+                                    <option value="">Select</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                    <option value="prefer-not-to-say">Prefer not to say</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="patient-contact">
+                                <i class="fas fa-phone"></i> Contact (Optional)
+                            </label>
+                            <input type="text" id="patient-contact" placeholder="Email or Phone">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="medical-history">
+                                <i class="fas fa-file-medical"></i> Medical History
+                            </label>
+                            <textarea id="medical-history" rows="3" placeholder="Any medical conditions, allergies, or current medications"></textarea>
+                        </div>
+                        
+                        <button class="btn-primary" id="start-consultation" disabled>
+                            <i class="fas fa-play-circle"></i> Start Consultation
+                        </button>
+                        
+                        <div class="disclaimer">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <small>This is an AI assistant. For emergencies, seek immediate medical help.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-display" id="patient-display" style="display: none;">
+                        <div class="profile-card">
+                            <div class="profile-header">
+                                <div class="avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="profile-info">
+                                    <h4 id="display-name">John Doe</h4>
+                                    <p id="display-age-gender">35 years, Male</p>
+                                </div>
+                            </div>
+                            <div class="profile-details">
+                                <div class="detail-item">
+                                    <i class="fas fa-phone"></i>
+                                    <span id="display-contact"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="543e3b3c3a14312c35392438317a373b39">[email&#160;protected]</a></span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-file-medical-alt"></i>
+                                    <span id="display-history">No significant history</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span id="display-session">Session Active</span>
+                                </div>
+                            </div>
+                            <button class="btn-secondary" id="edit-profile">
+                                <i class="fas fa-edit"></i> Edit Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Department Selector -->
+                <div class="department-selector">
+                    <h3><i class="fas fa-hospital"></i> Select Medical Department</h3>
+                    <div class="department-buttons">
+                        <button class="dept-btn cardiology" data-dept="cardiology">
+                            <i class="fas fa-heartbeat"></i> Cardiology
+                        </button>
+                        <button class="dept-btn pediatrics" data-dept="pediatrics">
+                            <i class="fas fa-baby"></i> Pediatrics
+                        </button>
+                        <button class="dept-btn neurology" data-dept="neurology">
+                            <i class="fas fa-brain"></i> Neurology
+                        </button>
+                        <button class="dept-btn gastroenterology" data-dept="gastroenterology">
+                            <i class="fas fa-stomach"></i> Gastroenterology
+                        </button>
+                        <button class="dept-btn dermatology" data-dept="dermatology">
+                            <i class="fas fa-allergies"></i> Dermatology
+                        </button>
+                        <button class="dept-btn orthopedics" data-dept="orthopedics">
+                            <i class="fas fa-bone"></i> Orthopedics
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="quick-actions">
+                    <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
+                    <button class="action-btn" id="symptom-checker-btn">
+                        <i class="fas fa-stethoscope"></i> Symptom Checker
+                    </button>
+                    <button class="action-btn" id="generate-report-btn">
+                        <i class="fas fa-file-pdf"></i> Generate Report
+                    </button>
+                    <button class="action-btn" id="medication-info-btn">
+                        <i class="fas fa-pills"></i> Medication Info
+                    </button>
+                    <button class="action-btn" id="emergency-guide-btn">
+                        <i class="fas fa-ambulance"></i> Emergency Guide
+                    </button>
+                </div>
+                
+                <div class="health-tips">
+                    <h4><i class="fas fa-lightbulb"></i> Health Tips</h4>
+                    <div class="tip">
+                        <i class="fas fa-glass-water"></i>
+                        <p>Stay hydrated - Drink at least 8 glasses of water daily</p>
+                    </div>
+                    <div class="tip">
+                        <i class="fas fa-walking"></i>
+                        <p>Regular exercise improves both physical and mental health</p>
+                    </div>
+                    <div class="tip">
+                        <i class="fas fa-bed"></i>
+                        <p>Get 7-9 hours of quality sleep each night</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Chat Area -->
+            <main class="chat-container">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div class="doctor-info">
+                        <div class="doctor-avatar">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div>
+                            <h2>Dr. HealthAI</h2>
+                            <p class="doctor-specialty">AI Medical Assistant — Powered by Groq LLM</p>
+                        </div>
+                    </div>
+                    <div class="chat-controls">
+                        <button class="icon-btn" id="clear-chat" title="Clear Chat">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="icon-btn" id="save-chat" title="Save Conversation">
+                            <i class="fas fa-save"></i>
+                        </button>
+                        <button class="icon-btn" id="voice-input" title="Voice Input">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Chat Messages -->
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Welcome Message -->
+                    <div class="message doctor-message">
+                        <div class="message-avatar">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="sender">Dr. HealthAI</span>
+                                <span class="time">Just now</span>
+                            </div>
+                            <div class="message-text">
+                                <p>👨‍⚕️ Welcome! I'm Dr. HealthAI, your AI medical assistant powered by <strong>Groq's ultrafast LLM inference</strong>.</p>
+                                <p>To get started, please:</p>
+                                <ol>
+                                    <li>Fill in your patient information on the left</li>
+                                    <li>Select a medical department</li>
+                                    <li>Click "Start Consultation"</li>
+                                </ol>
+                                <p>I can help you with specialized care in Cardiology, Pediatrics, Neurology, Gastroenterology, Dermatology, and Orthopedics — with real AI intelligence at lightning speed.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Typing Indicator -->
+                <div class="typing-indicator" id="typing-indicator">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <p>Dr. HealthAI (Groq) is thinking...</p>
+                </div>
+                
+                <!-- Input Area -->
+                <div class="chat-input-container">
+                    <div class="input-tools">
+                        <button class="tool-btn" id="add-symptoms-btn" title="Add Symptoms">
+                            <i class="fas fa-plus-circle"></i> Symptoms
+                        </button>
+                        <button class="tool-btn" id="attach-btn" title="Attach Files">
+                            <i class="fas fa-paperclip"></i> Attach
+                        </button>
+                        <button class="tool-btn" id="questions-btn" title="Quick Questions">
+                            <i class="fas fa-question-circle"></i> Questions
+                        </button>
+                    </div>
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="message-input" 
+                            placeholder="Describe your symptoms or ask a medical question... (Press Enter to send, Shift+Enter for new line)"
+                            rows="2"
+                            disabled
+                        ></textarea>
+                        <button class="send-btn" id="send-message" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="input-suggestions">
+                        <span class="suggestion-label">Quick suggestions:</span>
+                        <button class="suggestion-btn" data-symptom="headache">I have a headache and fever</button>
+                        <button class="suggestion-btn" data-symptom="stomach">Stomach pain and nausea</button>
+                        <button class="suggestion-btn" data-symptom="cough">Cough and cold symptoms</button>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Panel - Medical Info -->
+            <aside class="info-panel">
+                <div class="panel-section diagnosis-panel">
+                    <div class="panel-header">
+                        <i class="fas fa-diagnoses"></i>
+                        <h3>Diagnosis & Analysis</h3>
+                        <span class="department-tag" id="department-tag">General</span>
+                    </div>
+                    <div class="panel-content" id="diagnosis-content">
+                        <div class="placeholder">
+                            <i class="fas fa-stethoscope"></i>
+                            <p>Diagnosis will appear here after symptom analysis</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel-section treatment-panel">
+                    <div class="panel-header">
+                        <i class="fas fa-capsules"></i>
+                        <h3>Treatment Plan</h3>
+                    </div>
+                    <div class="panel-content" id="treatment-content">
+                        <div class="placeholder">
+                            <i class="fas fa-prescription-bottle-alt"></i>
+                            <p>Treatment recommendations will appear here</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel-section tests-panel">
+                    <div class="panel-header">
+                        <i class="fas fa-vial"></i>
+                        <h3>Recommended Tests</h3>
+                    </div>
+                    <div class="panel-content" id="tests-content">
+                        <div class="placeholder">
+                            <i class="fas fa-microscope"></i>
+                            <p>Recommended tests will appear here</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel-section report-panel">
+                    <div class="panel-header">
+                        <i class="fas fa-file-medical"></i>
+                        <h3>Medical Report</h3>
+                    </div>
+                    <div class="panel-content" id="report-content">
+                        <div class="placeholder">
+                            <i class="fas fa-file-download"></i>
+                            <p>Generate a comprehensive medical report</p>
+                            <button class="btn-primary" id="generate-report-panel-btn" disabled>
+                                <i class="fas fa-file-pdf"></i> Generate PDF Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4><i class="fas fa-shield-alt"></i> Privacy & Security</h4>
+                    <p>Your data is encrypted and secure. We comply with HIPAA guidelines for medical data protection.</p>
+                </div>
+                <div class="footer-section">
+                    <h4><i class="fas fa-exclamation-circle"></i> Important Notice</h4>
+                    <p>This AI assistant provides information only. For medical emergencies, call 112 or visit the nearest hospital.</p>
+                </div>
+                <div class="footer-section">
+                    <h4><i class="fas fa-info-circle"></i> About Dr. HealthAI</h4>
+                    <p>Powered by Groq ultrafast LLM inference. Real AI intelligence for medical consultations. Version 4.0.0 (Groq Edition)</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 Dr. HealthAI - AI Medical Assistant.</p><br>
+                <p>MADE BY MindflayerZ &nbsp;|&nbsp; <span class="groq-badge"><i class="fas fa-bolt"></i> Groq Powered</span></p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="symptom-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-stethoscope"></i> Symptom Checker</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="symptom-selector">
+                    <input type="text" id="symptom-search" placeholder="Search symptoms...">
+                    <div class="symptom-categories">
+                        <button class="category-btn active">All</button>
+                        <button class="category-btn">Respiratory</button>
+                        <button class="category-btn">Gastrointestinal</button>
+                        <button class="category-btn">Neurological</button>
+                        <button class="category-btn">General</button>
+                    </div>
+                    <div class="symptoms-list" id="symptoms-list">
+                        <!-- Symptoms will be populated here -->
+                    </div>
+                </div>
+                <div class="selected-symptoms">
+                    <h4>Selected Symptoms:</h4>
+                    <div id="selected-symptoms-container"></div>
+                    <button class="btn-primary" id="analyze-symptoms">
+                        <i class="fas fa-search"></i> Analyze Symptoms with Groq AI
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="report-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-medical"></i> Medical Report Generated</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="report-preview">
+                    <i class="fas fa-file-pdf"></i>
+                    <h4>Your Medical Report is Ready!</h4>
+                    <p>Download your comprehensive AI-powered medical consultation report in PDF format.</p>
+                    <a href="#" class="btn-primary" id="download-report">
+                        <i class="fas fa-download"></i> Download PDF Report
+                    </a>
+                    <button class="btn-secondary" id="view-report">
+                        <i class="fas fa-eye"></i> View Online
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Modal -->
+    <div class="modal emergency-modal" id="emergency-modal">
+        <div class="modal-content">
+            <div class="modal-header emergency">
+                <h3><i class="fas fa-exclamation-triangle"></i> EMERGENCY ALERT</h3>
+            </div>
+            <div class="modal-body">
+                <div class="emergency-info">
+                    <i class="fas fa-ambulance"></i>
+                    <h4>IMMEDIATE MEDICAL ATTENTION REQUIRED</h4>
+                    <p>Based on your symptoms, you should seek emergency medical care immediately.</p>
+                    
+                    <div class="emergency-steps">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <p><strong>CALL 112</strong> or your local emergency number</p>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <p>Go to the <strong>NEAREST EMERGENCY ROOM</strong></p>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <p>Do <strong>NOT</strong> drive yourself if experiencing severe symptoms</p>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contacts">
+                        <h5>Emergency Contacts:</h5>
+                        <ul>
+                            <li>National Suicide Prevention Lifeline: 988</li>
+                            <li>Poison Control: 1-800-222-1222</li>
+                            <li>Crisis Text Line: Text HOME to 741741</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="btn-emergency" onclick="window.location.href='tel:112'">
+                        <i class="fas fa-phone"></i> CALL 112 NOW
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        // ==================== GROQ API CONFIGURATION ====================
+        let GROQ_API_KEY = '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';
+        let GROQ_MODEL = 'llama-3.3-70b-versatile';
+        let GROQ_CONNECTED = true;
+        
+        // Groq API call function
+        async function callGroqAPI(messages, systemPrompt) {
+            if (!GROQ_CONNECTED || !GROQ_API_KEY) {
+                throw new Error('Groq API not connected. Please enter your API key.');
+            }
+            
+            const payload = {
+                model: GROQ_MODEL,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    ...messages
+                ],
+                max_tokens: 1024,
+                temperature: 0.7,
+                stream: false
+            };
+            
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GROQ_API_KEY}`
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || `Groq API Error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data.choices[0]?.message?.content || 'No response from Groq.';
+        }
+        
+        // Build medical system prompt for Groq
+        function buildMedicalSystemPrompt(department, patientInfo) {
+            const deptInfo = medicalKnowledge[department] || { name: 'General Medicine' };
+            return `You are Dr. HealthAI, an expert AI medical assistant specializing in ${deptInfo.name}. 
+            
+Patient Information:
+- Name: ${patientInfo.name}
+- Age: ${patientInfo.age} years
+- Gender: ${patientInfo.gender}
+- Medical History: ${patientInfo.history || 'None provided'}
+- Department: ${deptInfo.name}
+
+Your role:
+1. Provide compassionate, professional medical guidance as a specialist in ${deptInfo.name}
+2. Ask clarifying questions when needed to better understand symptoms
+3. Provide possible diagnoses with explanations (always note these are AI suggestions, not definitive diagnoses)
+4. Recommend appropriate tests and treatments
+5. Always emphasize the importance of consulting a real doctor for definitive care
+6. For emergencies, immediately direct to call 112 or go to the ER
+7. Format responses clearly with sections for: Assessment, Possible Conditions, Recommendations, and Tests if applicable
+8. Be thorough but concise. Use medical knowledge appropriate to the ${deptInfo.name} department.
+9. At the end of detailed consultations, provide a JSON block wrapped in <MEDICAL_DATA> tags with this exact structure:
+<MEDICAL_DATA>
+{
+  "diagnosis": "Primary diagnosis or differential",
+  "severity": "low|medium|high|emergency",
+  "recovery": "Expected recovery timeline",
+  "treatment": "Treatment recommendations",
+  "tests": "Recommended tests"
+}
+</MEDICAL_DATA>
+
+Always maintain a professional, empathetic tone. Respond in the same language the patient uses.`;
+        }
+        
+        // Parse medical data from Groq response
+        function parseMedicalData(responseText) {
+            try {
+                const match = responseText.match(/<MEDICAL_DATA>([\s\S]*?)<\/MEDICAL_DATA>/);
+                if (match) {
+                    return JSON.parse(match[1].trim());
+                }
+            } catch (e) {
+                // Silent fail
+            }
+            return null;
+        }
+        
+        // Clean response text (remove MEDICAL_DATA tags)
+        function cleanResponseText(text) {
+            return text.replace(/<MEDICAL_DATA>[\s\S]*?<\/MEDICAL_DATA>/g, '').trim();
+        }
+        
+        // Format response text with basic markdown-like formatting
+        function formatResponseText(text) {
+            return text
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/^### (.+)$/gm, '<h5 style="margin: 10px 0 5px; color: var(--dark-color);">$1</h5>')
+                .replace(/^## (.+)$/gm, '<h4 style="margin: 10px 0 5px; color: var(--primary-color);">$1</h4>')
+                .replace(/^# (.+)$/gm, '<h3 style="margin: 10px 0 5px;">$1</h3>')
+                .replace(/^\d+\.\s(.+)$/gm, '<li>$1</li>')
+                .replace(/^[-•]\s(.+)$/gm, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+        }
+        
+        // ==================== END GROQ CONFIGURATION ====================
+        
+        // DOM Elements
+        const notification = document.getElementById('notification');
+        const notificationTitle = document.getElementById('notification-title');
+        const notificationMessage = document.getElementById('notification-message');
+        const notificationIcon = document.getElementById('notification-icon');
+        const closeNotification = document.getElementById('close-notification');
+        
+        // Patient form elements
+        const patientForm = document.getElementById('patient-form');
+        const patientDisplay = document.getElementById('patient-display');
+        const startConsultationBtn = document.getElementById('start-consultation');
+        const editProfileBtn = document.getElementById('edit-profile');
+        const patientNameInput = document.getElementById('patient-name');
+        const patientAgeInput = document.getElementById('patient-age');
+        const patientGenderSelect = document.getElementById('patient-gender');
+        const patientContactInput = document.getElementById('patient-contact');
+        const medicalHistoryInput = document.getElementById('medical-history');
+        
+        // Display elements
+        const displayName = document.getElementById('display-name');
+        const displayAgeGender = document.getElementById('display-age-gender');
+        const displayContact = document.getElementById('display-contact');
+        const displayHistory = document.getElementById('display-history');
+        
+        // Department elements
+        const deptButtons = document.querySelectorAll('.dept-btn');
+        const departmentTag = document.getElementById('department-tag');
+        
+        // Chat elements
+        const chatMessages = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendMessageBtn = document.getElementById('send-message');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const suggestionBtns = document.querySelectorAll('.suggestion-btn');
+        
+        // Medical panels
+        const diagnosisContent = document.getElementById('diagnosis-content');
+        const treatmentContent = document.getElementById('treatment-content');
+        const testsContent = document.getElementById('tests-content');
+        const reportContent = document.getElementById('report-content');
+        
+        // Buttons
+        const symptomCheckerBtn = document.getElementById('symptom-checker-btn');
+        const generateReportBtn = document.getElementById('generate-report-btn');
+        const medicationInfoBtn = document.getElementById('medication-info-btn');
+        const emergencyGuideBtn = document.getElementById('emergency-guide-btn');
+        const generateReportPanelBtn = document.getElementById('generate-report-panel-btn');
+        const clearChatBtn = document.getElementById('clear-chat');
+        const saveChatBtn = document.getElementById('save-chat');
+        const voiceInputBtn = document.getElementById('voice-input');
+        const addSymptomsBtn = document.getElementById('add-symptoms-btn');
+        const attachBtn = document.getElementById('attach-btn');
+        const questionsBtn = document.getElementById('questions-btn');
+        
+        // Modals
+        const symptomModal = document.getElementById('symptom-modal');
+        const reportModal = document.getElementById('report-modal');
+        const emergencyModal = document.getElementById('emergency-modal');
+        const closeModalBtns = document.querySelectorAll('.close-modal');
+        
+        // Patient data
+        let patientData = {
+            name: '',
+            age: '',
+            gender: '',
+            contact: '',
+            history: '',
+            sessionActive: false,
+            selectedDepartment: 'general'
+        };
+        
+        // Groq conversation history (for multi-turn chat)
+        let groqConversationHistory = [];
+        
+        // Department-specific knowledge bases
+        const medicalKnowledge = {
+            // Cardiology Department
+            cardiology: {
+                name: 'Cardiology',
+                color: '#e74c3c',
+                icon: 'fa-heartbeat',
+                diseases: {
+                    'hypertension': {
+                        name: 'Hypertension (High Blood Pressure)',
+                        symptoms: ['Headache', 'Dizziness', 'Shortness of breath', 'Chest pain', 'Vision problems'],
+                        diagnosis: 'Chronic elevation of blood pressure (>140/90 mmHg)',
+                        treatment: 'Lifestyle modifications (diet, exercise), ACE inhibitors, beta-blockers, calcium channel blockers',
+                        tests: 'Blood pressure monitoring, ECG, echocardiogram, blood tests (lipid profile)',
+                        severity: 'high',
+                        recovery: 'Chronic condition requiring lifelong management',
+                        relatedTests: ['ecg', 'echocardiogram', 'lipid_panel', 'blood_pressure_monitor']
+                    },
+                    'angina': {
+                        name: 'Angina Pectoris',
+                        symptoms: ['Chest pain', 'Tightness in chest', 'Shortness of breath', 'Fatigue', 'Nausea'],
+                        diagnosis: 'Reduced blood flow to heart muscle causing chest discomfort',
+                        treatment: 'Nitroglycerin, beta-blockers, calcium channel blockers, lifestyle changes',
+                        tests: 'ECG, stress test, coronary angiography, cardiac CT',
+                        severity: 'high',
+                        recovery: 'Chronic condition with proper management',
+                        relatedTests: ['ecg', 'stress_test', 'angiogram', 'ct_scan']
+                    },
+                    'heart_failure': {
+                        name: 'Heart Failure',
+                        symptoms: ['Shortness of breath', 'Fatigue', 'Swelling in legs', 'Rapid heartbeat', 'Cough'],
+                        diagnosis: 'Heart unable to pump blood effectively',
+                        treatment: 'ACE inhibitors, diuretics, beta-blockers, lifestyle changes, possible surgery',
+                        tests: 'Echocardiogram, chest X-ray, BNP blood test, cardiac MRI',
+                        severity: 'high',
+                        recovery: 'Chronic condition requiring careful management',
+                        relatedTests: ['echocardiogram', 'chest_xray', 'bnp_test', 'mri_heart']
+                    },
+                    'arrhythmia': {
+                        name: 'Cardiac Arrhythmia',
+                        symptoms: ['Palpitations', 'Dizziness', 'Fainting', 'Chest discomfort', 'Shortness of breath'],
+                        diagnosis: 'Irregular heart rhythm (atrial fibrillation, ventricular tachycardia, etc.)',
+                        treatment: 'Medications (anti-arrhythmics), cardioversion, pacemaker, ablation',
+                        tests: 'ECG, Holter monitor, event recorder, electrophysiology study',
+                        severity: 'medium',
+                        recovery: 'Manageable with treatment',
+                        relatedTests: ['ecg', 'holter_monitor', 'event_recorder', 'eps_study']
+                    }
+                },
+                medications: {
+                    'atorvastatin': {
+                        name: 'Atorvastatin (Lipitor)',
+                        uses: 'Lowers cholesterol, prevents heart attacks and strokes',
+                        dosage: '10-80mg once daily',
+                        sideEffects: 'Muscle pain, liver problems, digestive issues',
+                        warnings: 'Avoid with grapefruit, monitor liver enzymes'
+                    },
+                    'metoprolol': {
+                        name: 'Metoprolol (Lopressor)',
+                        uses: 'High blood pressure, angina, heart failure',
+                        dosage: '25-200mg daily in divided doses',
+                        sideEffects: 'Fatigue, dizziness, slow heart rate, cold hands',
+                        warnings: 'Do not stop suddenly, monitor heart rate'
+                    },
+                    'lisinopril': {
+                        name: 'Lisinopril (Zestril)',
+                        uses: 'High blood pressure, heart failure, post-heart attack',
+                        dosage: '5-40mg once daily',
+                        sideEffects: 'Dry cough, dizziness, high potassium, kidney issues',
+                        warnings: 'Pregnancy category D, monitor kidney function'
+                    },
+                    'warfarin': {
+                        name: 'Warfarin (Coumadin)',
+                        uses: 'Blood thinner for preventing clots, stroke prevention',
+                        dosage: 'Individualized based on INR monitoring',
+                        sideEffects: 'Bleeding risk, bruising, interactions with many drugs/foods',
+                        warnings: 'Requires regular INR monitoring, many drug interactions'
+                    }
+                },
+                tests: {
+                    'ecg': {
+                        name: 'Electrocardiogram (ECG/EKG)',
+                        purpose: 'Records electrical activity of the heart',
+                        preparation: 'No special preparation needed',
+                        results: 'Immediate to same day',
+                        cost: 'Low'
+                    },
+                    'echocardiogram': {
+                        name: 'Echocardiogram',
+                        purpose: 'Ultrasound of heart structure and function',
+                        preparation: 'No special preparation',
+                        results: '1-2 days',
+                        cost: 'Medium'
+                    },
+                    'stress_test': {
+                        name: 'Cardiac Stress Test',
+                        purpose: 'Evaluates heart function during exercise',
+                        preparation: 'Wear comfortable clothing, fasting may be required',
+                        results: '1-2 days',
+                        cost: 'High'
+                    },
+                    'angiogram': {
+                        name: 'Coronary Angiography',
+                        purpose: 'Visualizes coronary arteries using contrast dye',
+                        preparation: 'Fasting, may require hospitalization',
+                        results: 'Immediate during procedure',
+                        cost: 'High'
+                    }
+                }
+            },
+            
+            // Pediatrics Department
+            pediatrics: {
+                name: 'Pediatrics',
+                color: '#3498db',
+                icon: 'fa-baby',
+                diseases: {
+                    'ear_infection': {
+                        name: 'Otitis Media (Ear Infection)',
+                        symptoms: ['Ear pain', 'Fever', 'Irritability', 'Difficulty sleeping', 'Fluid drainage'],
+                        diagnosis: 'Middle ear infection, common in children',
+                        treatment: 'Antibiotics (amoxicillin), pain relievers, warm compresses',
+                        tests: 'Otoscopic examination, tympanometry',
+                        severity: 'medium',
+                        recovery: '7-10 days with treatment',
+                        relatedTests: ['otoscopy', 'tympanometry']
+                    },
+                    'asthma_child': {
+                        name: 'Childhood Asthma',
+                        symptoms: ['Wheezing', 'Coughing', 'Shortness of breath', 'Chest tightness'],
+                        diagnosis: 'Chronic inflammatory airway disease',
+                        treatment: 'Inhalers (albuterol, corticosteroids), avoiding triggers',
+                        tests: 'Spirometry, peak flow measurement, allergy testing',
+                        severity: 'medium',
+                        recovery: 'Chronic condition manageable with treatment',
+                        relatedTests: ['spirometry', 'peak_flow', 'allergy_test']
+                    },
+                    'adhd': {
+                        name: 'Attention Deficit Hyperactivity Disorder',
+                        symptoms: ['Inattention', 'Hyperactivity', 'Impulsivity', 'Difficulty focusing'],
+                        diagnosis: 'Neurodevelopmental disorder',
+                        treatment: 'Behavioral therapy, medications (stimulants, non-stimulants)',
+                        tests: 'Behavioral assessments, psychological testing',
+                        severity: 'medium',
+                        recovery: 'Chronic condition manageable with treatment',
+                        relatedTests: ['behavioral_assessment', 'psychological_testing']
+                    },
+                    'chickenpox': {
+                        name: 'Chickenpox (Varicella)',
+                        symptoms: ['Itchy rash', 'Fever', 'Fatigue', 'Loss of appetite', 'Headache'],
+                        diagnosis: 'Viral infection caused by varicella-zoster virus',
+                        treatment: 'Calamine lotion, antihistamines, acetaminophen, antiviral in severe cases',
+                        tests: 'Clinical diagnosis, rarely viral culture',
+                        severity: 'medium',
+                        recovery: '7-10 days',
+                        relatedTests: ['clinical_exam']
+                    }
+                },
+                medications: {
+                    'amoxicillin_peds': {
+                        name: 'Amoxicillin (Pediatric)',
+                        uses: 'Bacterial infections (ear, sinus, throat)',
+                        dosage: 'Based on weight (20-90mg/kg/day in divided doses)',
+                        sideEffects: 'Diarrhea, rash, allergic reactions',
+                        warnings: 'Complete full course, watch for allergic reactions'
+                    },
+                    'albuterol': {
+                        name: 'Albuterol (Ventolin)',
+                        uses: 'Asthma relief, bronchospasm',
+                        dosage: 'Inhalation: 1-2 puffs every 4-6 hours as needed',
+                        sideEffects: 'Tremors, nervousness, fast heartbeat',
+                        warnings: 'Not for long-term control, use rescue inhaler as needed'
+                    },
+                    'acetaminophen_peds': {
+                        name: 'Acetaminophen (Children\'s Tylenol)',
+                        uses: 'Pain relief, fever reduction',
+                        dosage: 'Based on weight (10-15mg/kg every 4-6 hours)',
+                        sideEffects: 'Liver damage at high doses',
+                        warnings: 'Do not exceed recommended dose, check other medications for acetaminophen'
+                    },
+                    'methylphenidate': {
+                        name: 'Methylphenidate (Ritalin)',
+                        uses: 'ADHD treatment',
+                        dosage: 'Individualized, starting 5mg twice daily',
+                        sideEffects: 'Decreased appetite, insomnia, stomach ache',
+                        warnings: 'Monitor growth, heart rate, blood pressure'
+                    }
+                },
+                tests: {
+                    'growth_chart': {
+                        name: 'Growth Chart Assessment',
+                        purpose: 'Tracks height, weight, head circumference',
+                        preparation: 'None',
+                        results: 'Immediate',
+                        cost: 'Low'
+                    },
+                    'developmental_screening': {
+                        name: 'Developmental Screening',
+                        purpose: 'Assesses developmental milestones',
+                        preparation: 'None',
+                        results: 'Immediate',
+                        cost: 'Low'
+                    },
+                    'vaccination_check': {
+                        name: 'Vaccination Status Review',
+                        purpose: 'Ensures up-to-date immunizations',
+                        preparation: 'Bring vaccination records',
+                        results: 'Immediate',
+                        cost: 'Low'
+                    }
+                }
+            },
+            
+            // Neurology Department
+            neurology: {
+                name: 'Neurology',
+                color: '#9b59b6',
+                icon: 'fa-brain',
+                diseases: {
+                    'migraine': {
+                        name: 'Migraine',
+                        symptoms: ['Severe headache', 'Nausea', 'Sensitivity to light/sound', 'Aura', 'Vomiting'],
+                        diagnosis: 'Primary headache disorder with specific characteristics',
+                        treatment: 'Triptans, NSAIDs, anti-nausea medications, preventive medications',
+                        tests: 'Clinical diagnosis, MRI if atypical features',
+                        severity: 'medium',
+                        recovery: '4-72 hours per episode',
+                        relatedTests: ['mri_brain', 'ct_scan_head']
+                    },
+                    'epilepsy': {
+                        name: 'Epilepsy',
+                        symptoms: ['Seizures', 'Loss of consciousness', 'Staring spells', 'Uncontrollable movements'],
+                        diagnosis: 'Chronic neurological disorder characterized by recurrent seizures',
+                        treatment: 'Anti-epileptic drugs (levetiracetam, lamotrigine), ketogenic diet, surgery',
+                        tests: 'EEG, MRI brain, video EEG monitoring',
+                        severity: 'high',
+                        recovery: 'Chronic condition manageable with treatment',
+                        relatedTests: ['eeg', 'mri_brain', 'video_eeg']
+                    },
+                    'multiple_sclerosis': {
+                        name: 'Multiple Sclerosis',
+                        symptoms: ['Vision problems', 'Numbness', 'Weakness', 'Balance problems', 'Fatigue'],
+                        diagnosis: 'Autoimmune disease affecting central nervous system',
+                        treatment: 'Disease-modifying therapies, steroids, symptom management',
+                        tests: 'MRI brain/spine, lumbar puncture, evoked potentials',
+                        severity: 'high',
+                        recovery: 'Chronic progressive condition',
+                        relatedTests: ['mri_brain', 'lumbar_puncture', 'evoked_potentials']
+                    },
+                    'parkinsons': {
+                        name: 'Parkinson\'s Disease',
+                        symptoms: ['Tremor', 'Stiffness', 'Slow movement', 'Balance problems', 'Speech changes'],
+                        diagnosis: 'Progressive neurodegenerative disorder',
+                        treatment: 'Levodopa/carbidopa, dopamine agonists, deep brain stimulation',
+                        tests: 'Clinical diagnosis, DaTscan, response to levodopa',
+                        severity: 'high',
+                        recovery: 'Progressive chronic condition',
+                        relatedTests: ['datscan', 'clinical_exam']
+                    }
+                },
+                medications: {
+                    'sumatriptan': {
+                        name: 'Sumatriptan (Imitrex)',
+                        uses: 'Acute migraine treatment',
+                        dosage: '25-100mg oral, 6mg subcutaneous',
+                        sideEffects: 'Chest tightness, dizziness, tingling',
+                        warnings: 'Not for hemiplegic or basilar migraine, cardiovascular risk'
+                    },
+                    'levetiracetam': {
+                        name: 'Levetiracetam (Keppra)',
+                        uses: 'Seizure control',
+                        dosage: '500-1500mg twice daily',
+                        sideEffects: 'Drowsiness, dizziness, behavioral changes',
+                        warnings: 'Do not stop suddenly, may cause psychiatric symptoms'
+                    },
+                    'interferon_beta': {
+                        name: 'Interferon Beta (Avonex, Rebif)',
+                        uses: 'Multiple sclerosis treatment',
+                        dosage: 'Varies by formulation (injection)',
+                        sideEffects: 'Flu-like symptoms, injection site reactions, liver issues',
+                        warnings: 'Requires monitoring of liver function, blood counts'
+                    },
+                    'levodopa': {
+                        name: 'Levodopa/Carbidopa (Sinemet)',
+                        uses: 'Parkinson\'s disease symptoms',
+                        dosage: 'Individualized, starting 25/100mg three times daily',
+                        sideEffects: 'Nausea, dyskinesias, hallucinations',
+                        warnings: 'Take on empty stomach, may cause "wearing off" phenomenon'
+                    }
+                },
+                tests: {
+                    'mri_brain': {
+                        name: 'MRI Brain',
+                        purpose: 'Detailed images of brain structure',
+                        preparation: 'Remove metal objects, may need contrast',
+                        results: '2-3 days',
+                        cost: 'High'
+                    },
+                    'eeg': {
+                        name: 'Electroencephalogram (EEG)',
+                        purpose: 'Records brain electrical activity',
+                        preparation: 'Clean hair, may need sleep deprivation',
+                        results: '1-2 days',
+                        cost: 'Medium'
+                    },
+                    'emg': {
+                        name: 'Electromyography (EMG)',
+                        purpose: 'Tests nerve and muscle function',
+                        preparation: 'Avoid lotions, may be uncomfortable',
+                        results: 'Immediate to same day',
+                        cost: 'Medium'
+                    }
+                }
+            },
+            
+            // Gastroenterology Department
+            gastroenterology: {
+                name: 'Gastroenterology',
+                color: '#1abc9c',
+                icon: 'fa-stomach',
+                diseases: {
+                    'gerd': {
+                        name: 'GERD (Gastroesophageal Reflux Disease)',
+                        symptoms: ['Heartburn', 'Regurgitation', 'Chest pain', 'Difficulty swallowing', 'Chronic cough'],
+                        diagnosis: 'Chronic condition with stomach acid reflux into esophagus',
+                        treatment: 'PPIs, H2 blockers, lifestyle modifications, surgery if severe',
+                        tests: 'Endoscopy, pH monitoring, esophageal manometry',
+                        severity: 'medium',
+                        recovery: 'Chronic condition manageable with treatment',
+                        relatedTests: ['endoscopy', 'ph_monitoring', 'manometry']
+                    },
+                    'ibs': {
+                        name: 'Irritable Bowel Syndrome',
+                        symptoms: ['Abdominal pain', 'Bloating', 'Diarrhea', 'Constipation', 'Gas'],
+                        diagnosis: 'Functional gastrointestinal disorder',
+                        treatment: 'Diet modification (low FODMAP), stress management, medications',
+                        tests: 'Rule out other conditions (blood tests, stool tests, colonoscopy)',
+                        severity: 'low',
+                        recovery: 'Chronic condition manageable with lifestyle',
+                        relatedTests: ['stool_test', 'cbc', 'colonoscopy']
+                    },
+                    'crohns': {
+                        name: 'Crohn\'s Disease',
+                        symptoms: ['Abdominal pain', 'Diarrhea', 'Weight loss', 'Fatigue', 'Fever'],
+                        diagnosis: 'Inflammatory bowel disease affecting digestive tract',
+                        treatment: 'Anti-inflammatory drugs, immunosuppressants, biologics, surgery',
+                        tests: 'Colonoscopy, capsule endoscopy, CT/MRI enterography',
+                        severity: 'high',
+                        recovery: 'Chronic condition requiring ongoing management',
+                        relatedTests: ['colonoscopy', 'capsule_endoscopy', 'ct_enterography']
+                    },
+                    'ulcerative_colitis': {
+                        name: 'Ulcerative Colitis',
+                        symptoms: ['Bloody diarrhea', 'Abdominal pain', 'Urgency', 'Weight loss', 'Fatigue'],
+                        diagnosis: 'Inflammatory bowel disease affecting colon',
+                        treatment: '5-ASA drugs, corticosteroids, immunosuppressants, biologics',
+                        tests: 'Colonoscopy with biopsy, stool tests, blood tests',
+                        severity: 'high',
+                        recovery: 'Chronic condition with flare-ups and remission',
+                        relatedTests: ['colonoscopy', 'biopsy', 'stool_test']
+                    }
+                },
+                medications: {
+                    'omeprazole': {
+                        name: 'Omeprazole (Prilosec)',
+                        uses: 'GERD, stomach ulcers, acid reduction',
+                        dosage: '20-40mg once daily before meals',
+                        sideEffects: 'Headache, diarrhea, vitamin B12 deficiency',
+                        warnings: 'Take before meals, not for immediate relief'
+                    },
+                    'mesalamine': {
+                        name: 'Mesalamine (Asacol, Lialda)',
+                        uses: 'Ulcerative colitis, Crohn\'s disease',
+                        dosage: '2.4-4.8g daily in divided doses',
+                        sideEffects: 'Headache, nausea, abdominal pain',
+                        warnings: 'May cause kidney problems, monitor renal function'
+                    },
+                    'loperamide': {
+                        name: 'Loperamide (Imodium)',
+                        uses: 'Diarrhea control',
+                        dosage: '4mg initially, then 2mg after each loose stool (max 16mg/day)',
+                        sideEffects: 'Constipation, dizziness, abdominal pain',
+                        warnings: 'Not for infectious diarrhea, do not exceed dose'
+                    },
+                    'dicyclomine': {
+                        name: 'Dicyclomine (Bentyl)',
+                        uses: 'IBS symptoms, abdominal cramps',
+                        dosage: '20mg four times daily',
+                        sideEffects: 'Dry mouth, dizziness, blurred vision',
+                        warnings: 'May cause drowsiness, avoid in glaucoma'
+                    }
+                },
+                tests: {
+                    'colonoscopy': {
+                        name: 'Colonoscopy',
+                        purpose: 'Examines entire colon',
+                        preparation: 'Bowel prep, fasting',
+                        results: '1-2 weeks for biopsy results',
+                        cost: 'High'
+                    },
+                    'endoscopy': {
+                        name: 'Upper Endoscopy',
+                        purpose: 'Examines esophagus, stomach, duodenum',
+                        preparation: 'Fasting, sedation',
+                        results: 'Immediate visual, 1-2 weeks for biopsy',
+                        cost: 'High'
+                    },
+                    'h_pylori_test': {
+                        name: 'H. Pylori Test',
+                        purpose: 'Detects stomach bacteria',
+                        preparation: 'Stop PPIs 2 weeks before',
+                        results: '2-3 days',
+                        cost: 'Medium'
+                    }
+                }
+            },
+            
+            // Dermatology Department
+            dermatology: {
+                name: 'Dermatology',
+                color: '#e67e22',
+                icon: 'fa-allergies',
+                diseases: {
+                    'eczema': {
+                        name: 'Eczema (Atopic Dermatitis)',
+                        symptoms: ['Itchy skin', 'Red patches', 'Dry skin', 'Cracking', 'Inflammation'],
+                        diagnosis: 'Chronic inflammatory skin condition',
+                        treatment: 'Moisturizers, topical steroids, antihistamines, immunosuppressants',
+                        tests: 'Clinical diagnosis, patch testing for allergens',
+                        severity: 'medium',
+                        recovery: 'Chronic condition with flare-ups',
+                        relatedTests: ['patch_test', 'clinical_exam']
+                    },
+                    'psoriasis': {
+                        name: 'Psoriasis',
+                        symptoms: ['Red patches with silvery scales', 'Itching', 'Dry skin', 'Joint pain'],
+                        diagnosis: 'Autoimmune skin condition with rapid skin cell turnover',
+                        treatment: 'Topical treatments, phototherapy, systemic medications, biologics',
+                        tests: 'Clinical diagnosis, skin biopsy if uncertain',
+                        severity: 'medium',
+                        recovery: 'Chronic condition manageable with treatment',
+                        relatedTests: ['skin_biopsy', 'clinical_exam']
+                    },
+                    'acne': {
+                        name: 'Acne Vulgaris',
+                        symptoms: ['Pimples', 'Blackheads', 'Whiteheads', 'Cysts', 'Scarring'],
+                        diagnosis: 'Common skin condition with clogged pores and inflammation',
+                        treatment: 'Topical retinoids, antibiotics, hormonal therapy, isotretinoin',
+                        tests: 'Clinical diagnosis',
+                        severity: 'low',
+                        recovery: 'Weeks to months with treatment',
+                        relatedTests: ['clinical_exam']
+                    },
+                    'skin_cancer': {
+                        name: 'Skin Cancer (Basal Cell, Squamous Cell, Melanoma)',
+                        symptoms: ['Changing mole', 'New growth', 'Non-healing sore', 'Itching', 'Bleeding'],
+                        diagnosis: 'Malignant growth of skin cells',
+                        treatment: 'Surgical excision, Mohs surgery, radiation, chemotherapy',
+                        tests: 'Skin biopsy, dermoscopy, pathology',
+                        severity: 'high',
+                        recovery: 'Depends on type and stage',
+                        relatedTests: ['skin_biopsy', 'dermoscopy']
+                    }
+                },
+                medications: {
+                    'hydrocortisone': {
+                        name: 'Hydrocortisone Cream',
+                        uses: 'Mild eczema, itching, inflammation',
+                        dosage: 'Apply thin layer 2-3 times daily',
+                        sideEffects: 'Thinning skin, stretch marks, skin discoloration',
+                        warnings: 'Do not use on face long-term, limit to 2 weeks'
+                    },
+                    'tretinoin': {
+                        name: 'Tretinoin (Retin-A)',
+                        uses: 'Acne, anti-aging, skin renewal',
+                        dosage: 'Apply thin layer at night',
+                        sideEffects: 'Redness, peeling, sun sensitivity',
+                        warnings: 'Use sunscreen, may cause initial breakout'
+                    },
+                    'clobetasol': {
+                        name: 'Clobetasol (Temovate)',
+                        uses: 'Severe psoriasis, eczema',
+                        dosage: 'Apply thin layer twice daily',
+                        sideEffects: 'Thinning skin, stretch marks, adrenal suppression',
+                        warnings: 'Short-term use only, not for face or sensitive areas'
+                    },
+                    'isotretinoin': {
+                        name: 'Isotretinoin (Accutane)',
+                        uses: 'Severe nodular acne',
+                        dosage: '0.5-1mg/kg/day for 15-20 weeks',
+                        sideEffects: 'Dry skin, birth defects, liver issues, depression',
+                        warnings: 'Pregnancy prevention program required, monitor liver function'
+                    }
+                },
+                tests: {
+                    'skin_biopsy': {
+                        name: 'Skin Biopsy',
+                        purpose: 'Diagnoses skin conditions, checks for cancer',
+                        preparation: 'Local anesthesia',
+                        results: '3-7 days',
+                        cost: 'Medium'
+                    },
+                    'patch_test': {
+                        name: 'Patch Testing',
+                        purpose: 'Identifies contact allergens',
+                        preparation: 'Avoid antihistamines',
+                        results: '48-96 hours',
+                        cost: 'Medium'
+                    },
+                    'dermoscopy': {
+                        name: 'Dermoscopy',
+                        purpose: 'Magnified skin examination',
+                        preparation: 'None',
+                        results: 'Immediate',
+                        cost: 'Low'
+                    }
+                }
+            },
+            
+            // Orthopedics Department
+            orthopedics: {
+                name: 'Orthopedics',
+                color: '#34495e',
+                icon: 'fa-bone',
+                diseases: {
+                    'osteoarthritis': {
+                        name: 'Osteoarthritis',
+                        symptoms: ['Joint pain', 'Stiffness', 'Swelling', 'Reduced range of motion', 'Crepitus'],
+                        diagnosis: 'Degenerative joint disease with cartilage breakdown',
+                        treatment: 'Pain relievers, physical therapy, joint injections, surgery',
+                        tests: 'X-ray, MRI, joint aspiration',
+                        severity: 'medium',
+                        recovery: 'Chronic progressive condition',
+                        relatedTests: ['xray', 'mri_joint', 'joint_aspiration']
+                    },
+                    'rheumatoid_arthritis': {
+                        name: 'Rheumatoid Arthritis',
+                        symptoms: ['Joint pain', 'Morning stiffness', 'Swelling', 'Fatigue', 'Fever'],
+                        diagnosis: 'Autoimmune inflammatory arthritis',
+                        treatment: 'DMARDs, biologics, NSAIDs, steroids, physical therapy',
+                        tests: 'Blood tests (RF, anti-CCP), X-ray, ultrasound',
+                        severity: 'high',
+                        recovery: 'Chronic autoimmune condition',
+                        relatedTests: ['rheumatoid_factor', 'anti_ccp', 'xray']
+                    },
+                    'carpal_tunnel': {
+                        name: 'Carpal Tunnel Syndrome',
+                        symptoms: ['Hand numbness', 'Tingling', 'Weakness', 'Pain radiating up arm'],
+                        diagnosis: 'Compression of median nerve in wrist',
+                        treatment: 'Wrist splints, NSAIDs, steroid injections, surgery',
+                        tests: 'Nerve conduction study, EMG, ultrasound',
+                        severity: 'medium',
+                        recovery: 'Weeks to months with treatment',
+                        relatedTests: ['nerve_conduction', 'emg', 'ultrasound_wrist']
+                    },
+                    'herniated_disc': {
+                        name: 'Herniated Disc',
+                        symptoms: ['Back pain', 'Leg pain', 'Numbness', 'Weakness', 'Sciatica'],
+                        diagnosis: 'Disc material pressing on spinal nerves',
+                        treatment: 'Physical therapy, medications, epidural injections, surgery',
+                        tests: 'MRI, CT scan, X-ray',
+                        severity: 'medium',
+                        recovery: 'Weeks to months with conservative treatment',
+                        relatedTests: ['mri_spine', 'ct_scan', 'xray_spine']
+                    }
+                },
+                medications: {
+                    'naproxen': {
+                        name: 'Naproxen (Aleve)',
+                        uses: 'Pain relief, inflammation reduction',
+                        dosage: '250-500mg twice daily',
+                        sideEffects: 'Stomach upset, bleeding risk, kidney issues',
+                        warnings: 'Take with food, avoid with other NSAIDs'
+                    },
+                    'methotrexate': {
+                        name: 'Methotrexate',
+                        uses: 'Rheumatoid arthritis, autoimmune conditions',
+                        dosage: '7.5-25mg once weekly',
+                        sideEffects: 'Liver toxicity, lung problems, low blood counts',
+                        warnings: 'Requires regular blood monitoring, avoid alcohol'
+                    },
+                    'gabapentin': {
+                        name: 'Gabapentin (Neurontin)',
+                        uses: 'Nerve pain, neuropathic pain',
+                        dosage: '300-1200mg three times daily',
+                        sideEffects: 'Dizziness, drowsiness, swelling',
+                        warnings: 'Do not stop suddenly, may cause drowsiness'
+                    },
+                    'prednisone': {
+                        name: 'Prednisone',
+                        uses: 'Severe inflammation, autoimmune flares',
+                        dosage: '5-60mg daily, tapering schedule',
+                        sideEffects: 'Weight gain, mood changes, osteoporosis, diabetes',
+                        warnings: 'Do not stop suddenly, requires tapering'
+                    }
+                },
+                tests: {
+                    'xray': {
+                        name: 'X-ray',
+                        purpose: 'Images bones and joints',
+                        preparation: 'Remove jewelry',
+                        results: 'Same day',
+                        cost: 'Low'
+                    },
+                    'mri_joint': {
+                        name: 'MRI Joint',
+                        purpose: 'Detailed images of soft tissues, cartilage',
+                        preparation: 'Remove metal objects',
+                        results: '2-3 days',
+                        cost: 'High'
+                    },
+                    'bone_density': {
+                        name: 'Bone Density Scan (DEXA)',
+                        purpose: 'Measures bone strength, osteoporosis',
+                        preparation: 'No calcium supplements day of test',
+                        results: '1-2 days',
+                        cost: 'Medium'
+                    }
+                }
+            }
+        };
+        
+        // Chat history
+        let chatHistory = [];
+        
+        // Selected symptoms
+        let selectedSymptoms = [];
+        
+        // Initialize the application
+        function init() {
+            // Form validation
+            patientNameInput.addEventListener('input', validateForm);
+            patientAgeInput.addEventListener('input', validateForm);
+            patientGenderSelect.addEventListener('change', validateForm);
+            
+            // Start consultation
+            startConsultationBtn.addEventListener('click', startConsultation);
+            editProfileBtn.addEventListener('click', editProfile);
+            
+            // Department selection
+            deptButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    deptButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const dept = this.dataset.dept;
+                    patientData.selectedDepartment = dept;
+                    const deptInfo = medicalKnowledge[dept];
+                    departmentTag.textContent = deptInfo.name;
+                    departmentTag.className = `department-tag ${dept}-tag`;
+                    showNotification('Department Selected', `Switched to ${deptInfo.name} Department`, 'info');
+                });
+            });
+            
+            // Chat functionality
+            messageInput.addEventListener('keydown', handleKeydown);
+            sendMessageBtn.addEventListener('click', sendMessage);
+            
+            // Quick suggestion buttons
+            suggestionBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const symptom = this.getAttribute('data-symptom');
+                    useSuggestion(symptom);
+                });
+            });
+            
+            // Action buttons
+            symptomCheckerBtn.addEventListener('click', showSymptomModal);
+            generateReportBtn.addEventListener('click', showReportModal);
+            generateReportPanelBtn.addEventListener('click', showReportModal);
+            medicationInfoBtn.addEventListener('click', showMedicationInfo);
+            emergencyGuideBtn.addEventListener('click', showEmergencyModal);
+            
+            // Chat controls
+            clearChatBtn.addEventListener('click', clearChat);
+            saveChatBtn.addEventListener('click', saveChat);
+            
+            // Input tools
+            addSymptomsBtn.addEventListener('click', showSymptomModal);
+            attachBtn.addEventListener('click', simulateFileAttach);
+            questionsBtn.addEventListener('click', showCommonQuestions);
+            
+            // Modal controls
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.modal').classList.remove('show');
+                });
+            });
+            
+            // Notification controls
+            closeNotification.addEventListener('click', hideNotification);
+            
+            // Initialize symptom modal
+            initSymptomModal();
+            
+            // Close modals on outside click
+            window.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal')) {
+                    e.target.classList.remove('show');
+                }
+            });
+            
+            showNotification('Welcome', 'Fill in your patient information and select a department to start your AI-powered consultation', 'info');
+        }
+        
+        // Show notification
+        function showNotification(title, message, type = 'info') {
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+            
+            const icons = {
+                'info': 'fa-info-circle',
+                'success': 'fa-check-circle',
+                'warning': 'fa-exclamation-triangle',
+                'error': 'fa-times-circle'
+            };
+            
+            notificationIcon.className = `fas ${icons[type] || 'fa-info-circle'}`;
+            
+            const colors = {
+                'info': '#3498db',
+                'success': '#2ecc71',
+                'warning': '#f39c12',
+                'error': '#e74c3c'
+            };
+            
+            notification.style.borderLeftColor = colors[type] || '#3498db';
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                hideNotification();
+            }, 5000);
+        }
+        
+        // Hide notification
+        function hideNotification() {
+            notification.classList.remove('show');
+        }
+        
+        // Validate form
+        function validateForm() {
+            const isValid = 
+                patientNameInput.value.trim() !== '' &&
+                patientAgeInput.value !== '' &&
+                patientAgeInput.value > 0 &&
+                patientAgeInput.value <= 120 &&
+                patientGenderSelect.value !== '';
+            
+            startConsultationBtn.disabled = !isValid;
+            return isValid;
+        }
+        
+        // Start consultation
+        function startConsultation() {
+            if (!validateForm()) return;
+            
+            patientData = {
+                name: patientNameInput.value.trim(),
+                age: patientAgeInput.value,
+                gender: patientGenderSelect.value,
+                contact: patientContactInput.value.trim(),
+                history: medicalHistoryInput.value.trim(),
+                sessionActive: true,
+                selectedDepartment: patientData.selectedDepartment || 'general'
+            };
+            
+            displayName.textContent = patientData.name;
+            displayAgeGender.textContent = `${patientData.age} years, ${patientData.gender}`;
+            displayContact.textContent = patientData.contact || 'Not provided';
+            displayHistory.textContent = patientData.history || 'No significant history';
+            
+            patientForm.style.display = 'none';
+            patientDisplay.style.display = 'block';
+            
+            messageInput.disabled = false;
+            sendMessageBtn.disabled = false;
+            generateReportPanelBtn.disabled = false;
+            
+            // Reset conversation history for Groq
+            groqConversationHistory = [];
+            
+            const deptInfo = medicalKnowledge[patientData.selectedDepartment] || medicalKnowledge.cardiology;
+            
+            const welcomeText = `Hello ${patientData.name}! 👋 I'm Dr. HealthAI, your AI ${deptInfo.name} specialist powered by <strong>Groq's ultrafast LLM inference (${GROQ_MODEL})</strong>. I see you're ${patientData.age} years old and ${patientData.gender}. ${patientData.history ? `I note your medical history: ${patientData.history}.` : ''} How can I help you with ${deptInfo.name.toLowerCase()} concerns today? Please describe your symptoms in detail.`;
+            
+            addMessage('doctor', welcomeText);
+            
+            showNotification('Consultation Started', `You are now consulting with the ${deptInfo.name} Department ${GROQ_CONNECTED ? '(Groq AI Active ⚡)' : ''}`, 'success');
+            enableQuickActions();
+        }
+        
+        // Edit profile
+        function editProfile() {
+            patientForm.style.display = 'block';
+            patientDisplay.style.display = 'none';
+            messageInput.disabled = true;
+            sendMessageBtn.disabled = true;
+            generateReportPanelBtn.disabled = true;
+            patientData.sessionActive = false;
+            groqConversationHistory = [];
+        }
+        
+        // Enable quick actions
+        function enableQuickActions() {
+            document.querySelectorAll('.action-btn, .tool-btn').forEach(btn => {
+                btn.disabled = false;
+            });
+        }
+        
+        // Handle keydown in message input
+        function handleKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        // Send message
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || !patientData.sessionActive) return;
+            
+            addMessage('user', message);
+            messageInput.value = '';
+            showTypingIndicator();
+            
+            // Use Groq if connected, otherwise fall back to local logic
+            if (GROQ_CONNECTED) {
+                processMessageWithGroq(message);
+            } else {
+                setTimeout(() => {
+                    processUserMessage(message);
+                    hideTypingIndicator();
+                }, 1500 + Math.random() * 1000);
+            }
+        }
+        
+        // Process message with Groq AI
+        async function processMessageWithGroq(message) {
+            try {
+                // Check for emergency keywords first
+                const lowerMessage = message.toLowerCase();
+                if (hasEmergencyKeywords(lowerMessage)) {
+                    showEmergencyModal();
+                    hideTypingIndicator();
+                    addMessage('doctor', '⚠️ <strong>EMERGENCY WARNING:</strong> Based on your description, you may be experiencing a medical emergency. Please call 112 or go to the nearest emergency room immediately. This AI assistant cannot handle emergencies.');
+                    return;
+                }
+                
+                // Add user message to conversation history
+                groqConversationHistory.push({
+                    role: 'user',
+                    content: message
+                });
+                
+                // Build system prompt
+                const systemPrompt = buildMedicalSystemPrompt(patientData.selectedDepartment, patientData);
+                
+                // Call Groq API
+                const groqResponse = await callGroqAPI(groqConversationHistory, systemPrompt);
+                
+                // Add assistant response to history
+                groqConversationHistory.push({
+                    role: 'assistant',
+                    content: groqResponse
+                });
+                
+                // Parse any medical data from response
+                const medicalData = parseMedicalData(groqResponse);
+                const cleanedResponse = cleanResponseText(groqResponse);
+                const formattedResponse = formatResponseText(cleanedResponse);
+                
+                hideTypingIndicator();
+                addMessage('doctor', formattedResponse);
+                
+                // Update panels if medical data was extracted
+                if (medicalData) {
+                    const deptKnowledge = medicalKnowledge[patientData.selectedDepartment];
+                    if (medicalData.diagnosis) {
+                        updateDiagnosisPanel(`
+                            <div class="diagnosis-card">
+                                <h5>${medicalData.diagnosis} <span class="department-tag ${patientData.selectedDepartment}-tag">${deptKnowledge ? deptKnowledge.name : 'General'}</span></h5>
+                                <p><strong>Severity:</strong> ${medicalData.severity ? medicalData.severity.charAt(0).toUpperCase() + medicalData.severity.slice(1) : 'Assessment Needed'}</p>
+                                <p><strong>Recovery:</strong> ${medicalData.recovery || 'Depends on treatment'}</p>
+                                <p><small>🤖 Groq AI Analysis (${GROQ_MODEL})</small></p>
+                            </div>
+                        `);
+                    }
+                    if (medicalData.treatment) {
+                        updateTreatmentPanel(`
+                            <div class="treatment-card">
+                                <h5>AI-Recommended Treatment Plan</h5>
+                                <p>${medicalData.treatment}</p>
+                                <p><strong>⚠️ Always consult a healthcare professional before starting treatment.</strong></p>
+                            </div>
+                        `);
+                    }
+                    if (medicalData.tests) {
+                        updateTestsPanel(`
+                            <div class="test-card">
+                                <h5>Recommended Diagnostic Tests</h5>
+                                <p>${medicalData.tests}</p>
+                            </div>
+                        `);
+                    }
+                    showNotification('AI Analysis Complete', 'Groq AI has analyzed your symptoms. Check the panels for details.', 'success');
+                }
+                
+                // Keep conversation history manageable (last 20 messages)
+                if (groqConversationHistory.length > 20) {
+                    groqConversationHistory = groqConversationHistory.slice(-20);
+                }
+                
+            } catch (error) {
+                hideTypingIndicator();
+                console.error('Groq API Error:', error);
+                
+                if (error.message.includes('API not connected') || error.message.includes('401')) {
+                    GROQ_CONNECTED = false;
+                    addMessage('doctor', `⚠️ Groq API error: ${error.message}. Falling back to local knowledge base...`);
+                    // Fallback to local processing
+                    processUserMessage(message);
+                } else {
+                    addMessage('doctor', `I encountered an error with the AI service: ${error.message}. Please try again or check your API key.`);
+                    showNotification('Groq Error', error.message, 'error');
+                }
+            }
+        }
+        
+        // Use suggestion
+        function useSuggestion(symptomType) {
+            if (!patientData.sessionActive) {
+                showNotification('Please Start Consultation', 'Fill in your information and start consultation first', 'warning');
+                return;
+            }
+            
+            const suggestions = {
+                headache: "I have a headache and fever that started yesterday. The headache is throbbing and rates 6/10 in severity. I also have mild body aches.",
+                stomach: "I've been experiencing stomach pain and nausea since this morning. The pain is crampy and located in the lower abdomen. I haven't vomited but feel like I might.",
+                cough: "I have a persistent cough and cold symptoms for 3 days. The cough is dry and worse at night. I also have a runny nose and slight sore throat."
+            };
+            
+            messageInput.value = suggestions[symptomType] || `I'm experiencing ${symptomType} symptoms`;
+            messageInput.focus();
+        }
+        
+        // Add message to chat
+        function addMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">
+                    <i class="fas fa-${sender === 'user' ? 'user' : 'user-md'}"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="sender">${sender === 'user' ? 'You' : 'Dr. HealthAI'}</span>
+                        <span class="time">${time}${sender === 'doctor' && GROQ_CONNECTED ? ' <span class="groq-badge" style="font-size:0.7rem; padding:2px 6px;"><i class="fas fa-bolt"></i> Groq</span>' : ''}</span>
+                    </div>
+                    <div class="message-text">
+                        <p>${text}</p>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            chatHistory.push({
+                sender: sender,
+                text: text,
+                time: time
+            });
+        }
+        
+        // Show typing indicator
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'flex';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+        
+        // Process user message (local fallback)
+        function processUserMessage(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (hasEmergencyKeywords(lowerMessage)) {
+                showEmergencyModal();
+                addMessage('doctor', '⚠️ <strong>EMERGENCY WARNING:</strong> Based on your description, you may be experiencing a medical emergency. Please call 112 or go to the nearest emergency room immediately. This AI assistant cannot handle emergencies.');
+                return;
+            }
+            
+            if (lowerMessage.includes('medication') || lowerMessage.includes('pill') || lowerMessage.includes('drug')) {
+                provideMedicationInfo(lowerMessage);
+                return;
+            }
+            
+            const deptKnowledge = medicalKnowledge[patientData.selectedDepartment];
+            
+            if (!deptKnowledge) {
+                addMessage('doctor', 'Please select a medical department from the left sidebar to get specialized assistance.');
+                return;
+            }
+            
+            const matchedDiseases = analyzeSymptoms(lowerMessage, deptKnowledge);
+            
+            if (matchedDiseases.length > 0) {
+                const primaryDisease = matchedDiseases[0];
+                provideDiagnosis(primaryDisease, deptKnowledge);
+            } else {
+                addMessage('doctor', `Thank you for describing your symptoms. As a ${deptKnowledge.name} specialist, I'd like to know more:<br><br>1. How long have you had these symptoms?<br>2. On a scale of 1-10, how severe are they?<br>3. Have you noticed anything that makes them better or worse?<br>4. Do you have any other symptoms?<br><br><em>💡 Tip: Connect your Groq API key above for a full AI-powered consultation with much more detailed and context-aware responses!</em>`);
+                updateDiagnosisPanel('No specific diagnosis yet. Please provide more details about your symptoms.', deptKnowledge);
+                updateTreatmentPanel('Awaiting more information for treatment recommendations.');
+                updateTestsPanel('No tests recommended until further assessment.');
+            }
+        }
+        
+        // Check for emergency keywords
+        function hasEmergencyKeywords(message) {
+            const emergencyKeywords = [
+                'chest pain', 'heart attack', 'stroke', 'can\'t breathe', 'difficulty breathing',
+                'severe bleeding', 'unconscious', 'fainted', 'seizure', 'suicidal',
+                'severe headache', 'paralysis', 'poison', 'overdose', 'burn'
+            ];
+            
+            return emergencyKeywords.some(keyword => message.includes(keyword));
+        }
+        
+        // Analyze symptoms based on department
+        function analyzeSymptoms(message, deptKnowledge) {
+            const matchedDiseases = [];
+            
+            for (const [key, disease] of Object.entries(deptKnowledge.diseases)) {
+                let matchScore = 0;
+                
+                disease.symptoms.forEach(symptom => {
+                    if (message.includes(symptom.toLowerCase())) {
+                        matchScore += 2;
+                    }
+                });
+                
+                if (message.includes(disease.name.toLowerCase())) {
+                    matchScore += 5;
+                }
+                
+                if (matchScore > 0) {
+                    matchedDiseases.push({
+                        key: key,
+                        disease: disease,
+                        score: matchScore
+                    });
+                }
+            }
+            
+            matchedDiseases.sort((a, b) => b.score - a.score);
+            return matchedDiseases;
+        }
+        
+        // Provide diagnosis with department-specific info
+        function provideDiagnosis(diseaseInfo, deptKnowledge) {
+            const disease = diseaseInfo.disease;
+            
+            addMessage('doctor', `Based on your symptoms and as a ${deptKnowledge.name} specialist, this appears to be <strong>${disease.name}</strong>.<br><br><strong>Diagnosis:</strong> ${disease.diagnosis}<br><strong>Expected Recovery:</strong> ${disease.recovery}<br><strong>Severity:</strong> ${disease.severity === 'emergency' ? '🟥 Emergency' : disease.severity === 'high' ? '🟧 High' : disease.severity === 'medium' ? '🟨 Medium' : '🟩 Low'}<br><br><em>💡 Connect Groq API for deeper AI-powered analysis!</em>`);
+            
+            updateDiagnosisPanel(`
+                <div class="diagnosis-card">
+                    <h5>${disease.name} <span class="department-tag ${patientData.selectedDepartment}-tag">${deptKnowledge.name}</span></h5>
+                    <p><strong>Diagnosis:</strong> ${disease.diagnosis}</p>
+                    <p><strong>Severity:</strong> ${disease.severity.charAt(0).toUpperCase() + disease.severity.slice(1)}</p>
+                    <p><strong>Expected Recovery:</strong> ${disease.recovery}</p>
+                </div>
+            `, deptKnowledge);
+            
+            updateTreatmentPanel(`
+                <div class="treatment-card">
+                    <h5>Recommended Treatment Plan</h5>
+                    <p>${disease.treatment}</p>
+                    <p><strong>Important:</strong> These are general recommendations. Consult a healthcare professional for personalized treatment.</p>
+                </div>
+            `);
+            
+            updateTestsPanel(`
+                <div class="test-card">
+                    <h5>Recommended Diagnostic Tests</h5>
+                    <p>${disease.tests}</p>
+                </div>
+            `);
+            
+            showNotification('Diagnosis Complete', `Analysis suggests ${disease.name} in ${deptKnowledge.name}. Check the panels for details.`, 'success');
+        }
+        
+        // Provide medication information
+        function provideMedicationInfo(message) {
+            const deptKnowledge = medicalKnowledge[patientData.selectedDepartment];
+            let response = `I can provide information about ${deptKnowledge.name} medications. `;
+            let foundMedication = false;
+            
+            for (const [key, med] of Object.entries(deptKnowledge.medications)) {
+                if (message.includes(key.toLowerCase()) || message.includes(med.name.toLowerCase())) {
+                    foundMedication = true;
+                    response += `<br><br><strong>${med.name}</strong><br>`;
+                    response += `<strong>Uses:</strong> ${med.uses}<br>`;
+                    response += `<strong>Typical Dosage:</strong> ${med.dosage}<br>`;
+                    response += `<strong>Common Side Effects:</strong> ${med.sideEffects}<br>`;
+                    response += `<strong>Warnings:</strong> ${med.warnings}<br>`;
+                    response += '<br><em>Always consult a doctor before starting any medication.</em>';
+                    break;
+                }
+            }
+            
+            if (!foundMedication) {
+                response += 'I could not identify a specific medication from your query. Could you please provide the medication name?';
+            }
+            
+            addMessage('doctor', response);
+        }
+        
+        // Update diagnosis panel
+        function updateDiagnosisPanel(content, deptKnowledge) {
+            diagnosisContent.innerHTML = content;
+        }
+        
+        // Update treatment panel
+        function updateTreatmentPanel(content) {
+            treatmentContent.innerHTML = content;
+        }
+        
+        // Update tests panel
+        function updateTestsPanel(content) {
+            testsContent.innerHTML = content;
+        }
+        
+        // Initialize symptom modal
+        function initSymptomModal() {
+            const symptomsList = document.getElementById('symptoms-list');
+            const categoryBtns = document.querySelectorAll('.category-btn');
+            const symptomSearch = document.getElementById('symptom-search');
+            const analyzeSymptomsBtn = document.getElementById('analyze-symptoms');
+            const selectedSymptomsContainer = document.getElementById('selected-symptoms-container');
+            
+            function loadSymptoms(category = 'All') {
+                symptomsList.innerHTML = '';
+                
+                const allSymptoms = [
+                    { name: 'Chest pain', category: 'Cardiac' },
+                    { name: 'Palpitations', category: 'Cardiac' },
+                    { name: 'Shortness of breath', category: 'Cardiac' },
+                    { name: 'Swelling in legs', category: 'Cardiac' },
+                    { name: 'Fever in child', category: 'Pediatric' },
+                    { name: 'Ear pain', category: 'Pediatric' },
+                    { name: 'Rash', category: 'Pediatric' },
+                    { name: 'Poor feeding', category: 'Pediatric' },
+                    { name: 'Headache', category: 'Neurological' },
+                    { name: 'Dizziness', category: 'Neurological' },
+                    { name: 'Numbness', category: 'Neurological' },
+                    { name: 'Weakness', category: 'Neurological' },
+                    { name: 'Abdominal pain', category: 'Gastrointestinal' },
+                    { name: 'Nausea', category: 'Gastrointestinal' },
+                    { name: 'Diarrhea', category: 'Gastrointestinal' },
+                    { name: 'Heartburn', category: 'Gastrointestinal' },
+                    { name: 'Itchy skin', category: 'Dermatological' },
+                    { name: 'Rash with scales', category: 'Dermatological' },
+                    { name: 'Skin growth', category: 'Dermatological' },
+                    { name: 'Joint pain', category: 'Orthopedic' },
+                    { name: 'Back pain', category: 'Orthopedic' },
+                    { name: 'Swollen joint', category: 'Orthopedic' }
+                ];
+                
+                const filteredSymptoms = category === 'All' 
+                    ? allSymptoms 
+                    : allSymptoms.filter(s => s.category === category);
+                
+                filteredSymptoms.forEach(symptom => {
+                    const symptomItem = document.createElement('div');
+                    symptomItem.className = 'symptom-item';
+                    symptomItem.textContent = symptom.name;
+                    symptomItem.title = symptom.category;
+                    
+                    if (selectedSymptoms.includes(symptom.name)) {
+                        symptomItem.classList.add('selected');
+                    }
+                    
+                    symptomItem.addEventListener('click', () => {
+                        toggleSymptom(symptom.name, symptomItem);
+                    });
+                    
+                    symptomsList.appendChild(symptomItem);
+                });
+            }
+            
+            function toggleSymptom(symptomName, element) {
+                const index = selectedSymptoms.indexOf(symptomName);
+                
+                if (index === -1) {
+                    selectedSymptoms.push(symptomName);
+                    element.classList.add('selected');
+                } else {
+                    selectedSymptoms.splice(index, 1);
+                    element.classList.remove('selected');
+                }
+                
+                updateSelectedSymptoms();
+            }
+            
+            function updateSelectedSymptoms() {
+                selectedSymptomsContainer.innerHTML = '';
+                
+                selectedSymptoms.forEach(symptom => {
+                    const selectedSymptom = document.createElement('div');
+                    selectedSymptom.className = 'selected-symptom';
+                    selectedSymptom.innerHTML = `
+                        ${symptom}
+                        <i class="fas fa-times" data-symptom="${symptom}"></i>
+                    `;
+                    
+                    selectedSymptom.querySelector('i').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const symptomToRemove = e.target.getAttribute('data-symptom');
+                        const index = selectedSymptoms.indexOf(symptomToRemove);
+                        if (index !== -1) {
+                            selectedSymptoms.splice(index, 1);
+                            updateSelectedSymptoms();
+                            loadSymptoms(document.querySelector('.category-btn.active').textContent);
+                        }
+                    });
+                    
+                    selectedSymptomsContainer.appendChild(selectedSymptom);
+                });
+            }
+            
+            categoryBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    categoryBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    loadSymptoms(btn.textContent);
+                });
+            });
+            
+            symptomSearch.addEventListener('input', () => {
+                const searchTerm = symptomSearch.value.toLowerCase();
+                const items = symptomsList.querySelectorAll('.symptom-item');
+                
+                items.forEach(item => {
+                    if (item.textContent.toLowerCase().includes(searchTerm)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+            
+            analyzeSymptomsBtn.addEventListener('click', () => {
+                if (selectedSymptoms.length === 0) {
+                    showNotification('No Symptoms Selected', 'Please select at least one symptom', 'warning');
+                    return;
+                }
+                
+                const symptomText = selectedSymptoms.join(', ');
+                addMessage('user', `I'm experiencing: ${symptomText}`);
+                
+                symptomModal.classList.remove('show');
+                showTypingIndicator();
+                
+                if (GROQ_CONNECTED) {
+                    // Use Groq for analysis
+                    const analysisMessage = `Please analyze these symptoms for a ${patientData.age}-year-old ${patientData.gender} patient in the ${(medicalKnowledge[patientData.selectedDepartment] || {}).name || 'General'} department: ${symptomText}. Provide a thorough assessment.`;
+                    groqConversationHistory.push({ role: 'user', content: analysisMessage });
+                    const systemPrompt = buildMedicalSystemPrompt(patientData.selectedDepartment, patientData);
+                    
+                    callGroqAPI(groqConversationHistory, systemPrompt).then(groqResponse => {
+                        groqConversationHistory.push({ role: 'assistant', content: groqResponse });
+                        const medicalData = parseMedicalData(groqResponse);
+                        const cleanedResponse = cleanResponseText(groqResponse);
+                        const formattedResponse = formatResponseText(cleanedResponse);
+                        hideTypingIndicator();
+                        addMessage('doctor', formattedResponse);
+                        
+                        if (medicalData) {
+                            const deptKnowledge = medicalKnowledge[patientData.selectedDepartment];
+                            if (medicalData.diagnosis) {
+                                updateDiagnosisPanel(`
+                                    <div class="diagnosis-card">
+                                        <h5>${medicalData.diagnosis} <span class="department-tag ${patientData.selectedDepartment}-tag">${deptKnowledge ? deptKnowledge.name : 'General'}</span></h5>
+                                        <p><strong>Severity:</strong> ${medicalData.severity || 'N/A'}</p>
+                                        <p><strong>Recovery:</strong> ${medicalData.recovery || 'N/A'}</p>
+                                        <p><small>🤖 Groq AI (${GROQ_MODEL})</small></p>
+                                    </div>
+                                `);
+                            }
+                            if (medicalData.treatment) {
+                                updateTreatmentPanel(`<div class="treatment-card"><h5>Treatment Plan</h5><p>${medicalData.treatment}</p></div>`);
+                            }
+                            if (medicalData.tests) {
+                                updateTestsPanel(`<div class="test-card"><h5>Recommended Tests</h5><p>${medicalData.tests}</p></div>`);
+                            }
+                        }
+                        showNotification('Groq AI Analysis Complete', 'Check the panels for your symptom analysis', 'success');
+                        selectedSymptoms = [];
+                        updateSelectedSymptoms();
+                        loadSymptoms('All');
+                        symptomSearch.value = '';
+                    }).catch(error => {
+                        hideTypingIndicator();
+                        addMessage('doctor', `Error analyzing symptoms with Groq: ${error.message}`);
+                    });
+                } else {
+                    // Local fallback
+                    setTimeout(() => {
+                        const deptKnowledge = medicalKnowledge[patientData.selectedDepartment];
+                        
+                        if (!deptKnowledge) {
+                            addMessage('doctor', 'Please select a medical department first to analyze symptoms.');
+                            hideTypingIndicator();
+                            return;
+                        }
+                        
+                        let bestMatch = null;
+                        let bestScore = 0;
+                        
+                        for (const [key, disease] of Object.entries(deptKnowledge.diseases)) {
+                            let score = 0;
+                            selectedSymptoms.forEach(symptom => {
+                                if (disease.symptoms.some(s => s.toLowerCase().includes(symptom.toLowerCase()) || symptom.toLowerCase().includes(s.toLowerCase()))) {
+                                    score++;
+                                }
+                            });
+                            
+                            if (score > bestScore) {
+                                bestScore = score;
+                                bestMatch = { key: key, disease: disease, score: score };
+                            }
+                        }
+                        
+                        if (bestMatch && bestScore > 0) {
+                            provideDiagnosis(bestMatch, deptKnowledge);
+                        } else {
+                            addMessage('doctor', `Based on the symptoms you selected in ${deptKnowledge.name}, I recommend:<br><br>1. Monitor your symptoms<br>2. Stay hydrated and rest<br>3. Consult a ${deptKnowledge.name.toLowerCase()} specialist if symptoms worsen<br>4. Consider department-specific evaluation<br><br><em>💡 Connect Groq API for more detailed AI analysis!</em>`);
+                            
+                            updateDiagnosisPanel('Multiple symptom presentation. Further evaluation needed.', deptKnowledge);
+                            updateTreatmentPanel('Symptomatic treatment and monitoring recommended.');
+                            updateTestsPanel('Consider visiting a specialist for comprehensive evaluation.');
+                        }
+                        
+                        hideTypingIndicator();
+                        selectedSymptoms = [];
+                        updateSelectedSymptoms();
+                        loadSymptoms('All');
+                        symptomSearch.value = '';
+                        
+                    }, 2000);
+                }
+            });
+            
+            loadSymptoms('All');
+        }
+        
+        // Show symptom modal
+        function showSymptomModal() {
+            if (!patientData.sessionActive) {
+                showNotification('Please Start Consultation', 'Fill in your information and start consultation first', 'warning');
+                return;
+            }
+            
+            symptomModal.classList.add('show');
+        }
+        
+        // Show report modal
+        function showReportModal() {
+            if (!patientData.sessionActive) {
+                showNotification('Please Start Consultation', 'Fill in your information and start consultation first', 'warning');
+                return;
+            }
+            
+            reportModal.classList.add('show');
+            
+            const downloadBtn = document.getElementById('download-report');
+            downloadBtn.onclick = generatePDFReport;
+            
+            const viewBtn = document.getElementById('view-report');
+            viewBtn.onclick = () => {
+                alert('Report would be displayed here. For now, use the Download button.');
+                reportModal.classList.remove('show');
+            };
+        }
+        
+        // Show medication info
+        function showMedicationInfo() {
+            if (!patientData.sessionActive) {
+                showNotification('Please Start Consultation', 'Fill in your information and start consultation first', 'warning');
+                return;
+            }
+            
+            const deptKnowledge = medicalKnowledge[patientData.selectedDepartment];
+            
+            if (GROQ_CONNECTED) {
+                const medMsg = `What are the key medications used in ${deptKnowledge.name}? Please provide an overview of commonly used medications, their uses, dosages, and important warnings for a ${patientData.age}-year-old ${patientData.gender} patient.`;
+                addMessage('user', `Tell me about ${deptKnowledge.name} medications`);
+                showTypingIndicator();
+                groqConversationHistory.push({ role: 'user', content: medMsg });
+                const systemPrompt = buildMedicalSystemPrompt(patientData.selectedDepartment, patientData);
+                callGroqAPI(groqConversationHistory, systemPrompt).then(res => {
+                    groqConversationHistory.push({ role: 'assistant', content: res });
+                    hideTypingIndicator();
+                    addMessage('doctor', formatResponseText(cleanResponseText(res)));
+                }).catch(err => {
+                    hideTypingIndicator();
+                    addMessage('doctor', `Error: ${err.message}`);
+                });
+            } else {
+                addMessage('doctor', `I can provide information about ${deptKnowledge.name} medications. Please tell me:<br><br>1. The name of the medication you're asking about<br>2. What you're using it for<br>3. Any concerns or side effects you're experiencing<br><br>Or you can ask about department-specific medications.<br><br><em>💡 Connect Groq API for comprehensive AI-powered medication information!</em>`);
+            }
+        }
+        
+        // Show emergency modal
+        function showEmergencyModal() {
+            emergencyModal.classList.add('show');
+        }
+        
+        // Show common questions
+        function showCommonQuestions() {
+            if (!patientData.sessionActive) {
+                showNotification('Please Start Consultation', 'Fill in your information and start consultation first', 'warning');
+                return;
+            }
+            
+            const deptKnowledge = medicalKnowledge[patientData.selectedDepartment];
+            
+            if (GROQ_CONNECTED) {
+                const questionsMsg = `What are the 5 most commonly asked questions in ${deptKnowledge.name} for a ${patientData.age}-year-old ${patientData.gender} patient? Provide the questions and brief answers.`;
+                addMessage('user', `What are common ${deptKnowledge.name} questions?`);
+                showTypingIndicator();
+                groqConversationHistory.push({ role: 'user', content: questionsMsg });
+                const systemPrompt = buildMedicalSystemPrompt(patientData.selectedDepartment, patientData);
+                callGroqAPI(groqConversationHistory, systemPrompt).then(res => {
+                    groqConversationHistory.push({ role: 'assistant', content: res });
+                    hideTypingIndicator();
+                    addMessage('doctor', formatResponseText(cleanResponseText(res)));
+                }).catch(err => {
+                    hideTypingIndicator();
+                    addMessage('doctor', `Error: ${err.message}`);
+                });
+            } else {
+                addMessage('doctor', `Here are some common ${deptKnowledge.name} questions:<br><br>1. "What are the symptoms of ${Object.keys(deptKnowledge.diseases)[0].replace(/_/g, ' ')}?"<br>2. "How to manage chronic ${deptKnowledge.name.toLowerCase()} conditions?"<br>3. "When should I see a ${deptKnowledge.name.toLowerCase()} specialist?"<br>4. "What tests are commonly done in ${deptKnowledge.name.toLowerCase()}?"<br>5. "Medication side effects information"<br><br>Please ask any specific question you have!`);
+            }
+        }
+        
+        // Simulate file attach
+        function simulateFileAttach() {
+            if (!patientData.sessionActive) {
+                showNotification('Please Start Consultation', 'Fill in your information and start consultation first', 'warning');
+                return;
+            }
+            
+            showNotification('File Attachment', 'File attachment feature would be enabled in a real application. For now, you can describe any images or documents.', 'info');
+        }
+        
+        // Clear chat
+        function clearChat() {
+            if (confirm('Are you sure you want to clear the chat? This cannot be undone.')) {
+                const welcomeMessage = chatMessages.querySelector('.doctor-message');
+                chatMessages.innerHTML = '';
+                if (welcomeMessage) {
+                    chatMessages.appendChild(welcomeMessage);
+                }
+                
+                chatHistory = [];
+                groqConversationHistory = [];
+                
+                diagnosisContent.innerHTML = '<div class="placeholder"><i class="fas fa-stethoscope"></i><p>Diagnosis will appear here after symptom analysis</p></div>';
+                treatmentContent.innerHTML = '<div class="placeholder"><i class="fas fa-prescription-bottle-alt"></i><p>Treatment recommendations will appear here</p></div>';
+                testsContent.innerHTML = '<div class="placeholder"><i class="fas fa-microscope"></i><p>Recommended tests will appear here</p></div>';
+                
+                showNotification('Chat Cleared', 'Conversation history has been cleared', 'info');
+            }
+        }
+        
+        // Save chat
+        function saveChat() {
+            if (chatHistory.length === 0) {
+                showNotification('No Chat to Save', 'Start a conversation first', 'warning');
+                return;
+            }
+            
+            const chatData = {
+                patient: patientData,
+                groqModel: GROQ_MODEL,
+                history: chatHistory,
+                date: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(chatData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `healthai_groq_chat_${patientData.name || 'patient'}_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Chat Saved', 'Groq AI conversation saved as JSON file', 'success');
+        }
+        
+        // Generate PDF report
+        function generatePDFReport() {
+            try {
+                const doc = new jsPDF();
+                const deptKnowledge = medicalKnowledge[patientData.selectedDepartment];
+                
+                // Header
+                doc.setFillColor(52, 152, 219);
+                doc.rect(0, 0, 210, 30, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(20);
+                doc.text('Dr. HealthAI Medical Report', 20, 18);
+                doc.setFontSize(10);
+                doc.text(`Powered by Groq AI (${GROQ_MODEL})`, 20, 27);
+                
+                // Department
+                doc.setFontSize(12);
+                doc.text(`Department: ${deptKnowledge.name}`, 130, 27);
+                
+                // Patient Information
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(16);
+                doc.text('Patient Information', 20, 45);
+                
+                doc.setFontSize(11);
+                doc.text(`Name: ${patientData.name}`, 20, 55);
+                doc.text(`Age: ${patientData.age}`, 20, 62);
+                doc.text(`Gender: ${patientData.gender}`, 20, 69);
+                doc.text(`Contact: ${patientData.contact || 'Not provided'}`, 20, 76);
+                doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 83);
+                doc.text(`AI Model: ${GROQ_MODEL}`, 20, 90);
+                
+                // Medical History
+                doc.setFontSize(16);
+                doc.text('Medical History', 20, 105);
+                doc.setFontSize(11);
+                const historyLines = doc.splitTextToSize(patientData.history || 'No significant history provided', 170);
+                doc.text(historyLines, 20, 115);
+                
+                // Diagnosis
+                let yPos = 115 + (historyLines.length * 6) + 15;
+                const diagnosisText = diagnosisContent.textContent;
+                if (diagnosisText && !diagnosisText.includes('Diagnosis will appear here')) {
+                    doc.setFontSize(16);
+                    doc.text('Diagnosis & Analysis', 20, yPos);
+                    doc.setFontSize(11);
+                    const diagnosisLines = doc.splitTextToSize(diagnosisText, 170);
+                    doc.text(diagnosisLines, 20, yPos + 10);
+                    yPos += 10 + (diagnosisLines.length * 6) + 15;
+                }
+                
+                // Treatment
+                const treatmentText = treatmentContent.textContent;
+                if (treatmentText && !treatmentText.includes('Treatment recommendations will appear here')) {
+                    if (yPos > 250) { doc.addPage(); yPos = 20; }
+                    doc.setFontSize(16);
+                    doc.text('Treatment Plan', 20, yPos);
+                    doc.setFontSize(11);
+                    const treatmentLines = doc.splitTextToSize(treatmentText, 170);
+                    doc.text(treatmentLines, 20, yPos + 10);
+                    yPos += 10 + (treatmentLines.length * 6) + 15;
+                }
+                
+                // Recommended Tests
+                const testsText = testsContent.textContent;
+                if (testsText && !testsText.includes('Recommended tests will appear here')) {
+                    if (yPos > 250) { doc.addPage(); yPos = 20; }
+                    doc.setFontSize(16);
+                    doc.text('Recommended Tests', 20, yPos);
+                    doc.setFontSize(11);
+                    const testsLines = doc.splitTextToSize(testsText, 170);
+                    doc.text(testsLines, 20, yPos + 10);
+                    yPos += 10 + (testsLines.length * 6) + 15;
+                }
+                
+                // Conversation Summary
+                if (chatHistory.length > 0) {
+                    doc.addPage();
+                    doc.setFontSize(16);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text('Consultation Transcript', 20, 20);
+                    let transcriptY = 35;
+                    
+                    chatHistory.forEach(msg => {
+                        if (transcriptY > 265) { doc.addPage(); transcriptY = 20; }
+                        doc.setFontSize(9);
+                        doc.setTextColor(msg.sender === 'user' ? 39 : 52, msg.sender === 'user' ? 174 : 152, msg.sender === 'user' ? 96 : 219);
+                        doc.text(`[${msg.time}] ${msg.sender === 'user' ? patientData.name : 'Dr. HealthAI'}:`, 20, transcriptY);
+                        transcriptY += 5;
+                        doc.setTextColor(50, 50, 50);
+                        const plainText = msg.text.replace(/<[^>]*>/g, '');
+                        const msgLines = doc.splitTextToSize(plainText, 165);
+                        const chunkLines = msgLines.slice(0, 5); // Limit per message
+                        doc.text(chunkLines, 25, transcriptY);
+                        transcriptY += (chunkLines.length * 5) + 5;
+                    });
+                }
+                
+                // Footer on all pages
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(9);
+                    doc.setTextColor(128, 128, 128);
+                    doc.text(`Generated by Dr. HealthAI — Groq AI Edition (${GROQ_MODEL}) | Page ${i} of ${pageCount}`, 20, 285);
+                    doc.text('For educational/informational purposes only. Not a substitute for professional medical advice.', 20, 290);
+                }
+                
+                doc.save(`HealthAI_Groq_${deptKnowledge.name}_Report_${patientData.name || 'Patient'}_${new Date().toISOString().slice(0,10)}.pdf`);
+                
+                reportModal.classList.remove('show');
+                showNotification('Report Generated', 'Groq AI-powered PDF report downloaded successfully', 'success');
+                
+            } catch (error) {
+                console.error('PDF Generation Error:', error);
+                showNotification('PDF Error', 'Could not generate PDF report', 'error');
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
