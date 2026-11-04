@@ -1795,7 +1795,7 @@
                     { role: 'system', content: systemPrompt },
                     ...messages
                 ],
-                max_tokens: 1024,
+                max_tokens: 2048,
                 temperature: 0.7,
                 stream: false
             };
@@ -1818,39 +1818,30 @@
             return data.choices[0]?.message?.content || 'No response from Groq.';
         }
         
-        // Build medical system prompt for Groq
+        // Build medical system prompt for Groq — updated as per request
         function buildMedicalSystemPrompt(department, patientInfo) {
             const deptInfo = medicalKnowledge[department] || { name: 'General Medicine' };
-            return `You are Dr. HealthAI, an expert AI medical assistant specializing in ${deptInfo.name}. 
-            
-Patient Information:
-- Name: ${patientInfo.name}
-- Age: ${patientInfo.age} years
-- Gender: ${patientInfo.gender}
-- Medical History: ${patientInfo.history || 'None provided'}
-- Department: ${deptInfo.name}
+            return `You are Dr. HealthAI, an AI medical assistant (${deptInfo.name}).
+Patient: ${patientInfo.name}, ${patientInfo.age} years, ${patientInfo.gender}. History: ${patientInfo.history || 'none provided'}.
 
-Your role:
-1. Provide compassionate, professional medical guidance as a specialist in ${deptInfo.name}
-2. Ask clarifying questions when needed to better understand symptoms
-3. Provide possible diagnoses with explanations (always note these are AI suggestions, not definitive diagnoses)
-4. Recommend appropriate tests and treatments
-5. Always emphasize the importance of consulting a real doctor for definitive care
-6. For emergencies, immediately direct to call 112 or go to the ER
-7. Format responses clearly with sections for: Assessment, Possible Conditions, Recommendations, and Tests if applicable
-8. Be thorough but concise. Use medical knowledge appropriate to the ${deptInfo.name} department.
-9. At the end of detailed consultations, provide a JSON block wrapped in <MEDICAL_DATA> tags with this exact structure:
+STRICT RULES:
+- Be short and clear. No tables. No long explanations. No headings other than the bold labels below.
+- STEP 1: If the patient mentions fever, or a symptom where fever matters, and has not given the temperature, ask ONLY: "How high is your fever (in °C or °F)?" Nothing else. If there is no fever angle, ask ONE short question about the most important missing detail.
+- STEP 2: As soon as you have that answer (or if the first message is already enough), give the full answer immediately in this format, under 200 words:
+
+**Assessment:** 1-2 lines.
+**Treatment Plan:** 3-5 short bullets.
+**Medication:** 2-4 bullets with generic name, usual adult dose and frequency. Consider the patient's age and history (avoid NSAIDs like ibuprofen if heart, kidney, ulcer or blood thinner issues are possible).
+**Tests:** 3-5 short bullets.
+**Go to ER if:** 2-3 short bullets.
+
+- Never ask more than one question per reply. Never repeat questions already answered.
+- Dangerous symptoms (chest pain, trouble breathing, confusion, stiff neck, sudden worst headache): tell them to call 112 immediately.
+- Reply in the patient's language.
+- Whenever you give the full answer (STEP 2), end with this block, valid JSON on a single line per value, no code fences:
 <MEDICAL_DATA>
-{
-  "diagnosis": "Primary diagnosis or differential",
-  "severity": "low|medium|high|emergency",
-  "recovery": "Expected recovery timeline",
-  "treatment": "Treatment recommendations",
-  "tests": "Recommended tests"
-}
-</MEDICAL_DATA>
-
-Always maintain a professional, empathetic tone. Respond in the same language the patient uses.`;
+{"diagnosis": "...", "severity": "low|medium|high|emergency", "recovery": "...", "treatment": "treatment plan and medications in one short paragraph", "tests": "comma-separated tests"}
+</MEDICAL_DATA>`;
         }
         
         // Parse medical data from Groq response
