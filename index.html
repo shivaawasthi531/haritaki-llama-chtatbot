@@ -1818,7 +1818,7 @@
             return data.choices[0]?.message?.content || 'No response from Groq.';
         }
         
-        // Build medical system prompt for Groq — updated as per request
+        // Build medical system prompt for Groq — updated with anti-loop fever rule
         function buildMedicalSystemPrompt(department, patientInfo) {
             const deptInfo = medicalKnowledge[department] || { name: 'General Medicine' };
             return `You are Dr. HealthAI, an AI medical assistant (${deptInfo.name}).
@@ -1835,6 +1835,10 @@ STRICT RULES:
 **Tests:** 3-5 short bullets.
 **Go to ER if:** 2-3 short bullets.
 
+- FEVER QUESTION RULE (ANTI-LOOP):
+  * Ask the fever question at most ONCE per conversation.
+  * If you already asked about fever in an earlier message, do NOT ask again — go straight to STEP 2.
+  * If the patient replies without a number (e.g. "severe", "high", "mild", or talks about another symptom), do NOT ask again. Assume a moderate fever, give the full STEP 2 answer immediately, and mention that the exact temperature would help.
 - Never ask more than one question per reply. Never repeat questions already answered.
 - Dangerous symptoms (chest pain, trouble breathing, confusion, stiff neck, sudden worst headache): tell them to call 112 immediately.
 - Reply in the patient's language.
